@@ -13,7 +13,7 @@ function [iTj_q] = GetDirectGeometry(q, iTj, JointType)
 % The size of iTj is equal to (4,4,numberOfLinks)
 
 
-for i = 1:1:size(JointType,2)
+for i = 1:1:size(JointType,1) %(jointType,2)
     iTj_q(:,:,i) = DirectGeometry(q(i),iTj(:,:,i), JointType(i));
 end
 
