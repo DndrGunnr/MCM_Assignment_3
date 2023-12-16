@@ -17,20 +17,20 @@ qmax = [2.8973;1.7628;2.8973;-0.0698;2.8973;3.7525;2.8973];
 bTe = getTransform(model.franka,[q_init',0,0],'panda_link7');%DO NOT EDIT 
 
 % Tool frame definition
-%lenght measurements converted in mm
- eOt = [0, 0, 210.4];
+%lenght measurements converted in meters
+ eOt = [0, 0, 0.2104];
  Phi=deg2rad(-44.98);
  eRt=[cos(Phi), -sin(Phi), 0;
       sin(Phi), cos(Phi),  0;
       0,        0,         1];
- eTt = [  eRt, eOt;
+ eTt = [  eRt, eOt';
         0, 0, 0, 1];
  bTt = bTe*eTt;
 
 % Goal definition 
 %as defined by specs
-%measurements in mm
-bOg = [550, -300, 200]';
+%measurements in meters
+bOg = [0.55, -0.3, 0.2]';
 %rotation around y-axis of EE initial frame of pi/6
 gRe= [cos(pi/6), 0,  sin(pi/6);
        0,        1,      0    ;
