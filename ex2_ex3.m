@@ -32,9 +32,12 @@ bTe = getTransform(model.franka,[q_init',0,0],'panda_link7');%DO NOT EDIT
 %measurements in meters
 bOg = [0.55, -0.3, 0.2]';
 %rotation around y-axis of EE initial frame of pi/6
-gRe= [cos(pi/6), 0,  sin(pi/6);
+eRg= [cos(pi/6), 0,  sin(pi/6);
        0,        1,      0    ;
      -sin(pi/6), 0, cos(pi/6) ];
+bRg=bTe(1:3,1:3)*eRg;
+bTg=[bRg,bOg;
+     0,0,0,1];
 
 % Switch between the two cases (with and without the tool frame)
 tool = false; % change to true for using the tool
@@ -73,12 +76,21 @@ for i = t
         % Computing end effector jacobian w.r.t. base
         tmp = geometricJacobian(model.franka,[q',0,0],'panda_link7'); %DO NOT EDIT
         bJe = tmp(1:6,1:7); %DO NOT EDIT
-        % lin_err = ...
-        % ang_err = ...
+        %the linear error is the position vector from the EE frame to the
+        %goal frame
+        lin_err = bTq(1:3,4)-bOg';
+        %the angular error is the angle between the EE frame and the goal
+        %frame around the axix-vector
+        [theta, v]=ComputeInverseAngleAxis(bTe(1:3,1:3)'*bRg);
+        ang_err=theta*v;
     end
     
        
     %% Compute the reference velocities
+    %no velocities of goal frame
+    v_ref=-linear_gain*lin_err;
+    omega_ref=-angular_gain*ang_err;
+    
    
     %% Compute desired joint velocities 
     
