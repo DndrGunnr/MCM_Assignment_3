@@ -21,6 +21,7 @@ for i = 1:numberOfLinks
 end
 
 for i = 1:numberOfLinks
+
 %angular jacobian
     
     if jointType(i) == 0        %if link i is revolute
@@ -45,7 +46,9 @@ for i = 1:numberOfLinks
         J(4:6,i) = ki .* ire;    
     
     else                        %if joint is prismatic
+
         ki = bTi(1:3,3);        %prismatic axis
         J(4:6,i) = ki;
+        
     end
 end

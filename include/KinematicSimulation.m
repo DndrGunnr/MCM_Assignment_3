@@ -13,7 +13,11 @@ function [q] = KinematicSimulation(q, q_dot, ts, q_min, q_max)
 
 
     % Updating q
-
+    q = q + q_dot*ts;
     % Saturating the joint velocities 
-
+    if q > q_max
+        q = qmax;
+    elseif q < q_min
+        q = q_min;
+    end
 end

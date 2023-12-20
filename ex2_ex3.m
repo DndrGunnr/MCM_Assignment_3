@@ -32,6 +32,7 @@ bTe = getTransform(model.franka,[q_init',0,0],'panda_link7');%DO NOT EDIT
 %measurements in meters
 bOg = [0.55, -0.3, 0.2]';
 %rotation around y-axis of EE initial frame of pi/6
+theta = pi/6;
 eRg= [cos(pi/6), 0,  sin(pi/6);
        0,        1,      0    ;
      -sin(pi/6), 0, cos(pi/6) ];
@@ -59,7 +60,12 @@ q = q_init;
 
 %% Simulation Loop
 for i = t
-    
+    eRg= [cos(theta), 0,  sin(theta);
+            0,        1,      0    ;
+            -sin(theta), 0, cos(theta) ];
+    bRg=bTe(1:3,1:3)*eRg;
+    bTg=[bRg,bOg;
+        0,0,0,1];
     if tool == true %compute the error between the tool frame and goal frame
         
         % Computing transformation matrix from base to end effector 
@@ -78,22 +84,25 @@ for i = t
         bJe = tmp(1:6,1:7); %DO NOT EDIT
         %the linear error is the position vector from the EE frame to the
         %goal frame
-        lin_err = bOg'-bTe(1:3,4); 
+        lin_err = (bOg-bTe(1:3,4));
         %the angular error is the angle between the EE frame and the goal
         %frame around the axix-vector
         [theta, v]=ComputeInverseAngleAxis(bTe(1:3,1:3)'*bRg);
-        ang_err=theta*v;
+        rho = bTe(1:3,1:3) * (theta*v)';
+
+        ang_err=rho;
+        
     end
-    
        
     %% Compute the reference velocities
     %no velocities of goal frame
-    v_ref=-linear_gain*lin_err;
-    omega_ref=-angular_gain*ang_err;
-    
-   
+    v_ref=linear_gain*lin_err;
+    omega_ref=angular_gain*ang_err;
+      
     %% Compute desired joint velocities
-    q_dot=pinv(bJe)*[]
+    inv = pinv(bJe);
+    x_dot = [omega_ref; v_ref];
+    q_dot = inv * x_dot;
     
     %% Simulate the robot - implement the function KinematicSimulation()
     q = KinematicSimulation(q(1:7), q_dot,ts, qmin, qmax);
@@ -105,14 +114,15 @@ for i = t
     if tool == true
         %set the window size of the figure to "full-screen" for a better visualization
         plot3(bTt(1,4),bTt(2,4),bTt(3,4),'go','LineWidth',15);
-        plot3(bOgt(1),bOgt(2),bOgt(3),'ro','LineWidth',5);
+        plot3(bOg(1),bOg(2),bOg(3),'ro','LineWidth',5);
     else
         plot3(bTe(1,4),bTe(2,4),bTe(3,4),'go','LineWidth',15);
-        plot3(bOge(1),bOge(2),bOge(3),'ro','LineWidth',5);
+        plot3(bOg(1),bOg(2),bOg(3),'ro','LineWidth',5);
     end
     drawnow
     if(norm(x_dot) < 0.001)
         disp('REACHED THE REQUESTED GOAL POSITION')
         break
     end
+    hold off;
 end
