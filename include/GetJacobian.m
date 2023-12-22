@@ -43,7 +43,7 @@ for i = 1:numberOfLinks
         bri = bTi(1:3,4,i);     %vector from base to joint i
         bre = bTe (1:3,4);      %vector from base to EE
         ire = bre - bri;        %vector from joint i to EE
-        J(4:6,i) = ki .* ire;    
+        J(4:6,i) = cross(ki,ire);    
     
     else                        %if joint is prismatic
 
