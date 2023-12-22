@@ -84,25 +84,23 @@ for i = t
         bJe = tmp(1:6,1:7); %DO NOT EDIT
         %the linear error is the position vector from the EE frame to the
         %goal frame
-        lin_err = (bOg-bTe(1:3,4));
+        lin_err = bOg-bTe(1:3,4); 
         %the angular error is the angle between the EE frame and the goal
         %frame around the axix-vector
-        [theta, v]=ComputeInverseAngleAxis(bTe(1:3,1:3)'*bRg);
-        rho = bTe(1:3,1:3) * (theta*v)';
-
-        ang_err=rho;
-        
+        bRe=bTe(1:3,1:3);
+        [theta, v]=ComputeInverseAngleAxis(bRe'*bRg);
+        ang_err=bTe(1:3,1:3)*(theta*v)';
     end
        
     %% Compute the reference velocities
     %no velocities of goal frame
-    v_ref=linear_gain*lin_err;
-    omega_ref=angular_gain*ang_err;
-      
+    v_ref=(-linear_gain*lin_err);
+    omega_ref=-angular_gain*ang_err;
+    
+   
     %% Compute desired joint velocities
-    inv = pinv(bJe);
-    x_dot = [omega_ref; v_ref];
-    q_dot = inv * x_dot;
+    x_dot=[omega_ref;v_ref];
+    q_dot=pinv(bJe)*x_dot;
     
     %% Simulate the robot - implement the function KinematicSimulation()
     q = KinematicSimulation(q(1:7), q_dot,ts, qmin, qmax);
