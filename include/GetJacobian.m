@@ -1,4 +1,4 @@
-function [J, bTi] = GetJacobian(biTei, bTe, jointType, numberOfLinks)
+function [J, bTi] = GetJacobian(biTei, bTe, jointType)
 %% GetJacobian function
 % Function returning the end effector jacobian for a manipulator which current
 % configuration is described by bTei.
@@ -9,10 +9,11 @@ function [J, bTi] = GetJacobian(biTei, bTe, jointType, numberOfLinks)
 % - bTe: current transformation matrix from base to the end effector.
 % - jointType: vector identifying the joint type, 0 for revolute, 1 for
 % prismatic
-%-ADDED numberOfLinks
+%
 %
 % Output:
 % - J: end-effector jacobian matrix
+numberOfLinks = size(jointType);
 J = zeros(6,numberOfLinks);
 
 bTi = zeros(4,4,numberOfLinks);
