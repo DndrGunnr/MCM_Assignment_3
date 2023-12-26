@@ -16,6 +16,7 @@ iTj_q = GetDirectGeometry(q, geom_model, linkType);
 
 % Compute the transformation of EE w.r.t. the base
 bTe = GetTransformationWrtBase(iTj_q,numberOfLinks);
+disp('bTe');disp(bTe);
 
 % Computing end effector jacobian 
 j = GetJacobian(iTj_q, bTe, linkType, numberOfLinks);
@@ -31,16 +32,19 @@ q2 = [0.3, 1.4, 0.1, 2.0, 0, 1.3, 0];
 
 iTj_q2 = GetDirectGeometry(q2, iTj_q, linkType);
 bTe = GetTransformationWrtBase(iTj_q2,numberOfLinks);
+
 j2 = GetJacobian(iTj_q2, bTe, linkType, numberOfLinks);
 %% 1.1.3
 q3 = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0];
 
 iTj_q3 = GetDirectGeometry(q1, iTj_q, linkType);
 bTe = GetTransformationWrtBase(iTj_q3,numberOfLinks);
+
 j3 = GetJacobian(iTj_q3, bTe, linkType, numberOfLinks);
 %% 1.1.4
 q4 = [1, 1, 1, 1, 1, 1, 1];
 
 iTj_q4 = GetDirectGeometry(q4, iTj_q, linkType);
 bTe = GetTransformationWrtBase(iTj_q4,numberOfLinks);
-j4 = GetJacobian(iTj_q4, bTe, linkType, numberOfLinks);
+disp('bTe');disp(bTe);
+j4 = GetJacobian(iTj_q4, bTe, linkType, numberOfLinks)

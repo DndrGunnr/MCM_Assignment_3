@@ -27,6 +27,8 @@ for i = 1:numberOfLinks
     if jointType(i) == 0        %if link i is revolute
 
         ki = bTi(1:3,3,i);      %take the rotational axis (z-axis of the joint frame wrt base)
+        string=sprintf('btd%d',i);
+        disp(string);disp(bTi(:,:,i));
         J(1:3,i) = ki; 
     
     else                        %if link i is prismatic
@@ -39,10 +41,13 @@ for i = 1:numberOfLinks
     
     if jointType(i) == 0        %if joint i is revolute
 
-        ki = bTi(1:3,3,i);      %rotational axis
+        ki = bTi(1:3,3,i);
+        norm(ki)%rotational axis
         bri = bTi(1:3,4,i);     %vector from base to joint i
         bre = bTe (1:3,4);      %vector from base to EE
         ire = bre - bri;        %vector from joint i to EE
+        string1=sprintf('%dre',i);
+        disp(string1);disp(ire);
         J(4:6,i) = cross(ki,ire);    
     
     else                        %if joint is prismatic
