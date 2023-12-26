@@ -39,15 +39,15 @@ bTe = getTransform(model.franka,[q_init',0,0],'panda_link7');%DO NOT EDIT
 bOg = [0.55, -0.3, 0.2]';
 %rotation around y-axis of EE initial frame of pi/6
 theta = pi/6;
-eRg= [cos(pi/6), 0,  sin(pi/6);
+eRg= [cos(theta), 0,  sin(theta);
        0,        1,      0    ;
-     -sin(pi/6), 0, cos(pi/6) ];
+     -sin(theta), 0, cos(theta) ];
 bRg=bTe(1:3,1:3)*eRg;
 
 
 % Switch between the two cases (with and without the tool frame)
 tool = false; % change to true for using the tool
-if tool == false
+if tool == true
     %bTg = ...; % if controlling the tool frame
     tRg = eRg;             %transformation matrix is the same
     
@@ -75,18 +75,13 @@ q = q_init;
 for i = t
     
     if tool == true %compute the error between the tool frame and goal frame
-        
-        eRt=[cos(Phi), -sin(Phi), 0;
-              sin(Phi), cos(Phi),  0;
-              0,        0,         1];
-        eTt = [  eRt, eOt';
-                0, 0, 0, 1];
-        bTt = bTe*eTt;   
+
 
         % Computing transformation matrix from base to end effector 
         bTe = getTransform(model.franka,[q',0,0],'panda_link7'); %DO NOT EDIT
         tmp = geometricJacobian(model.franka,[q',0,0],'panda_link7'); %DO NOT EDIT
         bJe = tmp(1:6,1:7); %DO NOT EDIT
+        bTt = bTe*eTt; 
         %define Rigid body jacobian of Tool w.r.t EE
         eSt=[eye(3),zeros(3,3);
             eOt_vect_op',eye(3)];
@@ -98,12 +93,7 @@ for i = t
         ang_err = bRt*(theta*v)'
         
     else % compute the error between the e-e frame and goal frame
-        eRg= [cos(theta), 0,  sin(theta);
-            0,        1,      0    ;
-            -sin(theta), 0, cos(theta) ];
-        bRg=bTe(1:3,1:3)*eRg;
-        bTg=[bRg,bOg;
-            0,0,0,1];
+
         % Computing transformation matrix from base to end effector 
         bTe = getTransform(model.franka,[q',0,0],'panda_link7'); %DO NOT EDIT
         % Computing end effector jacobian w.r.t. base
@@ -121,7 +111,7 @@ for i = t
     end
        
     %% Compute the reference velocities
-    %no velocities of goal frame
+    % velocities of goal frame
     v_ref= linear_gain*lin_err;
     omega_ref= angular_gain*ang_err;
     
