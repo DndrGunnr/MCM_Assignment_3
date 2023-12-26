@@ -6,7 +6,7 @@ ts = 0.5;
 t_start = 0.0;
 t_end = 30.0;
 t = t_start:ts:t_end;
-
+figure;
 % Initial Joints configuration
 q_init = [0.0167305,-0.762614,-0.0207622,-2.34352,-0.0305686,1.53975,0.753872]';
 % Joint limits
@@ -19,14 +19,16 @@ bTe = getTransform(model.franka,[q_init',0,0],'panda_link7');%DO NOT EDIT
 % Tool frame definition
 %lenght measurements converted in meters
  eOt = [0, 0, 0.2104];
+ 
  Phi=deg2rad(-44.98);
  eRt=[cos(Phi), -sin(Phi), 0;
       sin(Phi), cos(Phi),  0;
       0,        0,         1];
  eTt = [  eRt, eOt';
         0, 0, 0, 1];
- bTt = bTe*eTt;
+ bTt = bTe*eTt;         
 
+ 
 % Goal definition 
 %as defined by specs
 %measurements in meters
@@ -37,15 +39,22 @@ eRg= [cos(pi/6), 0,  sin(pi/6);
        0,        1,      0    ;
      -sin(pi/6), 0, cos(pi/6) ];
 bRg=bTe(1:3,1:3)*eRg;
-bTg=[bRg,bOg;
-     0,0,0,1];
+
 
 % Switch between the two cases (with and without the tool frame)
-tool = false; % change to true for using the tool
+tool = true; % change to true for using the tool
 if tool == true
     %bTg = ...; % if controlling the tool frame
+    tRg = eRg;             %transformation matrix is the same
+    
+    bRt = bTt(1:3,1:3);
+    bRg = bRt * tRg;
+    bTg = [bRg,bOg; 0, 0, 0, 1];
+
 else
     %bTg = ...; % if controlling the ee frame
+    bTg=[bRg,bOg;
+         0,0,0,1];
 end   
 
 % Control Proportional Gain 
@@ -60,23 +69,33 @@ q = q_init;
 
 %% Simulation Loop
 for i = t
-    eRg= [cos(theta), 0,  sin(theta);
-            0,        1,      0    ;
-            -sin(theta), 0, cos(theta) ];
-    bRg=bTe(1:3,1:3)*eRg;
-    bTg=[bRg,bOg;
-        0,0,0,1];
+    
     if tool == true %compute the error between the tool frame and goal frame
         
+        eRt=[cos(Phi), -sin(Phi), 0;
+              sin(Phi), cos(Phi),  0;
+              0,        0,         1];
+        eTt = [  eRt, eOt';
+                0, 0, 0, 1];
+        bTt = bTe*eTt;   
+
         % Computing transformation matrix from base to end effector 
         bTe = getTransform(model.franka,[q',0,0],'panda_link7'); %DO NOT EDIT
         tmp = geometricJacobian(model.franka,[q',0,0],'panda_link7'); %DO NOT EDIT
         bJe = tmp(1:6,1:7); %DO NOT EDIT
-        % bJt = ... 
-        % lin_err = ...
-        % ang_err = ...
+        %bJt = ... 
+        lin_err = bOg - bTt(1:3,4);
+        bRt = bTt(1:3,1:3);
+        [theta, v]=ComputeInverseAngleAxis(bRt'*bRg);
+        ang_err = bRt*(theta*v)';
         
     else % compute the error between the e-e frame and goal frame
+        eRg= [cos(theta), 0,  sin(theta);
+            0,        1,      0    ;
+            -sin(theta), 0, cos(theta) ];
+        bRg=bTe(1:3,1:3)*eRg;
+        bTg=[bRg,bOg;
+            0,0,0,1];
         % Computing transformation matrix from base to end effector 
         bTe = getTransform(model.franka,[q',0,0],'panda_link7'); %DO NOT EDIT
         % Computing end effector jacobian w.r.t. base
@@ -89,13 +108,13 @@ for i = t
         %frame around the axix-vector
         bRe=bTe(1:3,1:3);
         [theta, v]=ComputeInverseAngleAxis(bRe'*bRg);
-        ang_err=bTe(1:3,1:3)*(theta*v)';
+        ang_err= bRe*(theta*v)';
     end
        
     %% Compute the reference velocities
     %no velocities of goal frame
-    v_ref=(-linear_gain*lin_err);
-    omega_ref=-angular_gain*ang_err;
+    v_ref= linear_gain*lin_err;
+    omega_ref= angular_gain*ang_err;
     
    
     %% Compute desired joint velocities
