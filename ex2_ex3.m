@@ -19,6 +19,10 @@ bTe = getTransform(model.franka,[q_init',0,0],'panda_link7');%DO NOT EDIT
 % Tool frame definition
 %lenght measurements converted in meters
  eOt = [0, 0, 0.2104];
+ %vector operator for eOt vector
+ eOt_vect_op=[0,-eOt(3),eOt(2);
+              eOt(3),0,-eOt(1);
+              -eOt(2),eOt(1),0];
  
  Phi=deg2rad(-44.98);
  eRt=[cos(Phi), -sin(Phi), 0;
@@ -42,8 +46,8 @@ bRg=bTe(1:3,1:3)*eRg;
 
 
 % Switch between the two cases (with and without the tool frame)
-tool = true; % change to true for using the tool
-if tool == true
+tool = false; % change to true for using the tool
+if tool == false
     %bTg = ...; % if controlling the tool frame
     tRg = eRg;             %transformation matrix is the same
     
@@ -83,11 +87,15 @@ for i = t
         bTe = getTransform(model.franka,[q',0,0],'panda_link7'); %DO NOT EDIT
         tmp = geometricJacobian(model.franka,[q',0,0],'panda_link7'); %DO NOT EDIT
         bJe = tmp(1:6,1:7); %DO NOT EDIT
-        %bJt = ... 
-        lin_err = bOg - bTt(1:3,4);
+        %define Rigid body jacobian of Tool w.r.t EE
+        eSt=[eye(3),zeros(3,3);
+            eOt_vect_op',eye(3)];
+        bJt = eSt*bJe;
+        lin_err = bOg - bTt(1:3,4)
         bRt = bTt(1:3,1:3);
         [theta, v]=ComputeInverseAngleAxis(bRt'*bRg);
-        ang_err = bRt*(theta*v)';
+        %the error is projected on base frame
+        ang_err = bRt*(theta*v)'
         
     else % compute the error between the e-e frame and goal frame
         eRg= [cos(theta), 0,  sin(theta);
@@ -103,12 +111,13 @@ for i = t
         bJe = tmp(1:6,1:7); %DO NOT EDIT
         %the linear error is the position vector from the EE frame to the
         %goal frame
-        lin_err = bOg-bTe(1:3,4); 
+        lin_err = bOg-bTe(1:3,4)
         %the angular error is the angle between the EE frame and the goal
         %frame around the axix-vector
         bRe=bTe(1:3,1:3);
         [theta, v]=ComputeInverseAngleAxis(bRe'*bRg);
-        ang_err= bRe*(theta*v)';
+        %error projected on base frame
+        ang_err= bRe*(theta*v)'
     end
        
     %% Compute the reference velocities
@@ -119,7 +128,12 @@ for i = t
    
     %% Compute desired joint velocities
     x_dot=[omega_ref;v_ref];
-    q_dot=pinv(bJe)*x_dot;
+    if tool==true
+        q_dot=pinv(bJt)*x_dot;
+    else
+        q_dot=pinv(bJe)*x_dot;
+    end
+    
     
     %% Simulate the robot - implement the function KinematicSimulation()
     q = KinematicSimulation(q(1:7), q_dot,ts, qmin, qmax);
