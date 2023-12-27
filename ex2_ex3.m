@@ -46,14 +46,15 @@ bRg=bTe(1:3,1:3)*eRg;
 
 
 % Switch between the two cases (with and without the tool frame)
-tool = false; % change to true for using the tool
+tool = true; % change to true for using the tool
 if tool == true
     %bTg = ...; % if controlling the tool frame
-    tRg = eRg;             %transformation matrix is the same
-    
+    tRg = eRt'*eRg;             
     bRt = bTt(1:3,1:3);
     bRg = bRt * tRg;
     bTg = [bRg,bOg; 0, 0, 0, 1];
+
+    
 
 else
     %bTg = ...; % if controlling the ee frame
@@ -86,11 +87,11 @@ for i = t
         eSt=[eye(3),zeros(3,3);
             eOt_vect_op',eye(3)];
         bJt = eSt*bJe;
-        lin_err = bOg - bTt(1:3,4)
+        lin_err = bOg - bTt(1:3,4);
         bRt = bTt(1:3,1:3);
         [theta, v]=ComputeInverseAngleAxis(bRt'*bRg);
         %the error is projected on base frame
-        ang_err = bRt*(theta*v)'
+        ang_err = bRt*(theta*v)';
         
     else % compute the error between the e-e frame and goal frame
 
@@ -101,13 +102,13 @@ for i = t
         bJe = tmp(1:6,1:7); %DO NOT EDIT
         %the linear error is the position vector from the EE frame to the
         %goal frame
-        lin_err = bOg-bTe(1:3,4)
+        lin_err = bOg-bTe(1:3,4);
         %the angular error is the angle between the EE frame and the goal
         %frame around the axix-vector
         bRe=bTe(1:3,1:3);
         [theta, v]=ComputeInverseAngleAxis(bRe'*bRg);
         %error projected on base frame
-        ang_err= bRe*(theta*v)'
+        ang_err= bRe*(theta*v)';
     end
        
     %% Compute the reference velocities
