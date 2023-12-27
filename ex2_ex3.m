@@ -37,26 +37,31 @@ bTe = getTransform(model.franka,[q_init',0,0],'panda_link7');%DO NOT EDIT
 %as defined by specs
 %measurements in meters
 bOg = [0.55, -0.3, 0.2]';
-%rotation around y-axis of EE initial frame of pi/6
-theta = pi/6;
-eRg= [cos(theta), 0,  sin(theta);
-       0,        1,      0    ;
-     -sin(theta), 0, cos(theta) ];
-bRg=bTe(1:3,1:3)*eRg;
+
 
 
 % Switch between the two cases (with and without the tool frame)
 tool = true; % change to true for using the tool
 if tool == true
-    %bTg = ...; % if controlling the tool frame
-    tRg = eRt'*eRg;             
-    bRt = bTt(1:3,1:3);
+    % if controlling the tool frame
+    %goal frame rotated of pi/6 around y-axis of tool frame from specs
+    theta = pi/6;
+    tRg= [cos(theta), 0,  sin(theta);
+       0,        1,      0    ;
+     -sin(theta), 0, cos(theta) ];
+    bRt = bTt(1:3,1:3);            
     bRg = bRt * tRg;
     bTg = [bRg,bOg; 0, 0, 0, 1];
 
     
 
 else
+    %rotation around y-axis of EE initial frame of pi/6 from specs
+    theta = pi/6;
+    eRg= [cos(theta), 0,  sin(theta);
+       0,        1,      0    ;
+     -sin(theta), 0, cos(theta) ];
+    bRg=bTe(1:3,1:3)*eRg;
     %bTg = ...; % if controlling the ee frame
     bTg=[bRg,bOg;
          0,0,0,1];
@@ -87,11 +92,11 @@ for i = t
         eSt=[eye(3),zeros(3,3);
             eOt_vect_op',eye(3)];
         bJt = eSt*bJe;
-        lin_err = bOg - bTt(1:3,4);
+        lin_err = bOg - bTt(1:3,4)
         bRt = bTt(1:3,1:3);
         [theta, v]=ComputeInverseAngleAxis(bRt'*bRg);
         %the error is projected on base frame
-        ang_err = bRt*(theta*v)';
+        ang_err = bRt*(theta*v)'
         
     else % compute the error between the e-e frame and goal frame
 
