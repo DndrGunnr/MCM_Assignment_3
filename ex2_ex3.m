@@ -40,7 +40,7 @@ bOg = [0.55, -0.3, 0.2]';
 
 
 % Switch between the two cases (with and without the tool frame)
-tool = false; % change to true for using the tool
+tool = true; % change to true for using the tool
 if tool == true
     % if controlling the tool frame
     %goal frame rotated of pi/6 around y-axis of tool frame from specs

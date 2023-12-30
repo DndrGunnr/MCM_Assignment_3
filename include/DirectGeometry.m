@@ -18,7 +18,7 @@ if linkType == 0 % rotational
     iTj_q=iTj;
 
 elseif linkType == 1 % prismatic
-    iTj(3,4)=iTj(3,4)+qi;
+    iTj(1:3,4)=iTj(1:3,4)+iTj(1:3,1:3)*([0,0,1]'*qi);
     iTj_q=iTj;
 
 

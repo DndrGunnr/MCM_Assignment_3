@@ -6,7 +6,7 @@ numberOfLinks = size(geom_model,3); % number of manipulator's links.
 linkType = zeros(numberOfLinks,1); % specify two possible link type: Rotational, Prismatic.
 bTi = zeros(4,4,numberOfLinks);% Trasformation matrix i-th link w.r.t. base
 
-% Initial joint configuration 
+% Initial joint configuration
 q = [1.3,1.3,1.3,1.3,1.3,1.3,1.3];
 
 %% Compute direct geometry
