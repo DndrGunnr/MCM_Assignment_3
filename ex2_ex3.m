@@ -6,7 +6,6 @@ ts = 0.5;
 t_start = 0.0;
 t_end = 30.0;
 t = t_start:ts:t_end;
-figure;
 % Initial Joints configuration
 q_init = [0.0167305,-0.762614,-0.0207622,-2.34352,-0.0305686,1.53975,0.753872]';
 % Joint limits
@@ -41,7 +40,7 @@ bOg = [0.55, -0.3, 0.2]';
 
 
 % Switch between the two cases (with and without the tool frame)
-tool = true; % change to true for using the tool
+tool = false; % change to true for using the tool
 if tool == true
     % if controlling the tool frame
     %goal frame rotated of pi/6 around y-axis of tool frame from specs
@@ -92,11 +91,11 @@ for i = t
         eSt=[eye(3),zeros(3,3);
             eOt_vect_op',eye(3)];
         bJt = eSt*bJe;
-        lin_err = bOg - bTt(1:3,4)
+        lin_err = bOg - bTt(1:3,4);
         bRt = bTt(1:3,1:3);
         [theta, v]=ComputeInverseAngleAxis(bRt'*bRg);
         %the error is projected on base frame
-        ang_err = bRt*(theta*v)'
+        ang_err = bRt*(theta*v)';
         
     else % compute the error between the e-e frame and goal frame
 
