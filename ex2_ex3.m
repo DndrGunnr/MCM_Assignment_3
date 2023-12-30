@@ -61,7 +61,7 @@ else
        0,        1,      0    ;
      -sin(theta), 0, cos(theta) ];
     bRg=bTe(1:3,1:3)*eRg;
-    %bTg = ...; % if controlling the ee frame
+     % if controlling the ee frame
     bTg=[bRg,bOg;
          0,0,0,1];
 end   
@@ -76,6 +76,7 @@ ang_err = zeros(3,1);
 % Start the inverse kinematic control  
 q = q_init;
 
+
 %% Simulation Loop
 for i = t
     
@@ -86,7 +87,7 @@ for i = t
         bTe = getTransform(model.franka,[q',0,0],'panda_link7'); %DO NOT EDIT
         tmp = geometricJacobian(model.franka,[q',0,0],'panda_link7'); %DO NOT EDIT
         bJe = tmp(1:6,1:7); %DO NOT EDIT
-        bTt = bTe*eTt; 
+        bTt = bTe*eTt;
         %define Rigid body jacobian of Tool w.r.t EE
         eSt=[eye(3),zeros(3,3);
             eOt_vect_op',eye(3)];
@@ -112,17 +113,17 @@ for i = t
         bRe=bTe(1:3,1:3);
         [theta, v]=ComputeInverseAngleAxis(bRe'*bRg);
         %error projected on base frame
-        ang_err= bRe*(theta*v)';
+        %v was horizontal so had to be transposed
+        ang_err= bRe*(theta*v');
     end
        
     %% Compute the reference velocities
     % velocities of goal frame
-    v_ref= linear_gain*lin_err;
-    omega_ref= angular_gain*ang_err;
-    
+    % the two gains in this case are equal, but we used them both for a
+    % more general approach
+    x_dot=[angular_gain*ang_err;linear_gain*lin_err];
    
     %% Compute desired joint velocities
-    x_dot=[omega_ref;v_ref];
     if tool==true
         q_dot=pinv(bJt)*x_dot;
     else
